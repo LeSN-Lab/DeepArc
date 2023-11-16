@@ -1,5 +1,4 @@
 import os
-import _thread
 import time
 
 threshold = [0.9,0.91,0.92,0.93,0.94,0.95,0.96,0.97,0.98,0.99]
