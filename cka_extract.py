@@ -47,5 +47,12 @@ with tf.io.gfile.GFile(out_dir, 'wb') as f:
 
 plot_dir = os.path.join(args.base_dir, 'layer')
 plot_ckalist_resume([cka],plot_dir)
+
+plot_dir = os.path.join(args.base_dir, 'layerEven')
+plot_ckalist_resume([cka[::2,::2]],plot_dir)
+
+plot_dir = os.path.join(args.base_dir, 'layerOdd')
+plot_ckalist_resume([cka[1::2,1::2]],plot_dir)
+
 plot_dir = os.path.join(args.base_dir, 'block')
 plot_ckalist_resume([cka1],plot_dir)

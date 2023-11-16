@@ -1,4 +1,5 @@
 import os
+import tensorflow as tf
 
 
 g = 0
@@ -9,6 +10,6 @@ print(des_dir)
 if os.path.exists(des_dir):
     exit(112)
 else:
-    commend = 'CUDA_VISIBLE_DEVICES={} python analysis.py --experiment_dir {} --gpu {}'.format(g,dir,0)
+    commend = 'CUDA_VISIBLE_DEVICES={} python analysis.py --experiment_dir {} --gpu {}'.format(g,dir,4096)
     print(commend)
     os.system(commend)
