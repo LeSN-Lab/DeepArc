@@ -19,6 +19,7 @@ args = parser.parse_args()
 #(gpu connection - automatically connection)
 
 # model_load, weights
+# jaxmodel.py, model architecture remains.
 # model =
 with open('model_weights.pkl', 'rb') as f:
     loaded_params = pickle.load(f)
