@@ -17,17 +17,38 @@ parser.add_argument('--gpu', type=int,
                     help= 'gpu limit')
 args = parser.parse_args()
 
+# model_load
+
 # gpu connection
-
-gpus =
-
-
-# pickle_load
-
-
 
 # cka_dir
 
+layers = []
+cka_dir = os.path.join(args.base_dir, 'cka_within_model_256_normalize_activations.pkl')
+with open(cka_dir, 'rb') as f:
+    cka = pickle.load(f)
+print(cka)
 
-# plot_dir
+# layer processing
+cka1 = cka[layers]
+cka1 = cka1[:, layers]
+print(cka.shape, cka1.shape)
 
+
+
+out_dir = os.path.join(args.base_dir, 'cka_within_model_256_b.pkl')
+with open(out_dir, 'wb') as f:
+  pickle.dump(cka1, f)
+
+# Plotting, plot_ckalist_resume
+plot_dir = os.path.join(args.base_dir, 'layer')
+plot_ckalist_resume([cka],plot_dir)
+
+plot_dir = os.path.join(args.base_dir, 'layerEven')
+plot_ckalist_resume([cka[::2,::2]],plot_dir)
+
+plot_dir = os.path.join(args.base_dir, 'layerOdd')
+plot_ckalist_resume([cka[1::2,1::2]],plot_dir)
+
+plot_dir = os.path.join(args.base_dir, 'block')
+plot_ckalist_resume([cka1],plot_dir)
