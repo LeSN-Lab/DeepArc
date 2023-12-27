@@ -23,4 +23,19 @@ def update_state(hsic_accumulator, activations):
     hsic_accumulator += jnp.dot(layer_grams, layer_grams.T)
     return hsic_accumulator
 
+
 # result in jax
+def result(hsic_accumulator, across_models=False, hsic_accumulator_model1=None, hsic_accumulator_model2=None):
+    mean_hsic = hsic_accumulator
+    if across_models:
+        normalization1 = jnp.sqrt(hsic_accumulator_model1)
+        normalization2 = jnp.sqrt(hsic_accumulator_model2)
+        mean_hsic /= normalization1[:, None]
+        mean_hsic /= normalization2[None, :]
+    else:
+        normalization = jnp.sqrt(jnp.diag(mean_hsic))
+        mean_hsic /= normalization[:, None]  # HISC(K,K)
+        mean_hsic /= normalization[None, :]  # HISC(L,L)
+    return mean_hsic
+
+# calc in jax
