@@ -38,8 +38,15 @@ def result(hsic_accumulator, across_models=False, hsic_accumulator_model1=None, 
         mean_hsic /= normalization[None, :]  # HISC(L,L)
     return mean_hsic
 
+
+
+# Model load
+
+# Model relation
+
 # workflow example
 # 1. num_layer =
 # 2. hsic_accumulator =
 # 3. hsic_accumulator = update_state(hsic_accumulator, activations)
 # 4. cka_result = result(hsic_accumulator)
+# 5. print(cka_result)
