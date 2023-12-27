@@ -19,7 +19,7 @@ args = parser.parse_args()
 #(gpu connection - automatically connection)
 
 # model_load, weights
-model = MyModel()
+# model =
 with open('model_weights.pkl', 'rb') as f:
     loaded_params = pickle.load(f)
 
