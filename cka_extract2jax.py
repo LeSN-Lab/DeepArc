@@ -8,7 +8,7 @@ from jax import grad, jit, vmap
 from jax import random
 import os
 import argparse
-
+from flax import linen as nn
 # parser
 parser = argparse.ArgumentParser(description='Process modularity.')
 parser.add_argument('--base_dir', type=str,
@@ -16,12 +16,12 @@ parser.add_argument('--base_dir', type=str,
 parser.add_argument('--gpu', type=int,
                     help= 'gpu limit')
 args = parser.parse_args()
+#(gpu connection - automatically connection)
 
-# model_load
-
-# gpu connection
-
-# cka_dir
+# model_load, weights
+model = MyModel()
+with open('model_weights.pkl', 'rb') as f:
+    loaded_params = pickle.load(f)
 
 layers = []
 cka_dir = os.path.join(args.base_dir, 'cka_within_model_256_normalize_activations.pkl')
