@@ -22,6 +22,8 @@ var/
 wheels/
 share/python-wheels/
 *.egg-info/
+dog vs cat/
+
 .installed.cfg
 *.egg
 MANIFEST
