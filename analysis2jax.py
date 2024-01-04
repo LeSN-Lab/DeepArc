@@ -22,3 +22,16 @@ def normalize_activations(act):
     act_norm = jnp.linalg.norm(act, axis=1)
     return act / act_norm[:, None]
 
+def get_activations(model, paramas, inputs):
+    activations = []
+    x = inputs
+    for layer in model.layers:
+        x = layer.apply({'params': params[layer.name]}, x)
+        activations.append()
+    return activations
+
+# convert_bn_to_train_mode -> is_training flag 모델 정의 시)
+
+
+
+# compute CKA
