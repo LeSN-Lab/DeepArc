@@ -48,6 +48,13 @@ def get_activations(images, model, normalize_act=False):
     activations = [normalize_activations(act) for act in activations]
   return activations
 
+# Jax 는 모델의 구성을 변경해야 함. ex. activation.append
+# get_activations keras independent code.
+# def get_activations(images, model, normalize_act=False):
+#   layer_outputs = [layer(images) for layer in model.layers]
+#   if normalize_act:
+#     layer_outputs = [normalize_activations(act) for act in layer_outputs]
+#     return layer_outputs
 
 def convert_bn_to_train_mode(model):
   bn_layers = [
