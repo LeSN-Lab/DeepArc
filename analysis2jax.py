@@ -35,3 +35,25 @@ def get_activations(model, paramas, inputs):
 
 
 # compute CKA
+def compute_cka_internal(model_dir,
+                         data_path=None,
+                         dataset_name='cifar10',
+                         use_batch=True,
+                         use_train_mode=False,
+                         normalize_act=True):
+  if dataset_name == 'cifar10':
+    if use_train_mode:
+      filename = 'cka_within_model_%d_bn_train_mode.pkl' % FLAGS.cka_batch
+    else:
+      filename = 'cka_within_model_%d.pkl' % FLAGS.cka_batch
+  else:
+    suffix = dataset_name.split('_')[-1]
+    if use_train_mode:
+      filename = 'cka_within_model_%d_%s_bn_train_mode.pkl' % (FLAGS.cka_batch,
+                                                               suffix)
+    else:
+      filename = 'cka_within_model_%d_%s.pkl' % (FLAGS.cka_batch, suffix)
+  if normalize_act:
+    filename = filename.replace('.pkl', '_normalize_activations.pkl')
+  print('------------',model_dir)
+  out_dir = os.path.join(model_dir, filename)
