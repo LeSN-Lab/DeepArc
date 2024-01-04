@@ -7,4 +7,18 @@ from flax import linen as nn
 import numpy as np
 import os
 import pickle
+import argparse
+
+
+
+parser = argparse.ArgumentParser(description='CKA calculation settings.')
+parser.add_argument('--cka_batch', type=int, default=256, help='Batch size for CKA approximation')
+parser.add_argument('--cka_iter', type=int, default=5, help='number of iterations for CKA approximation')
+parser.add_argument('--experiment_name', type=str, default='None', help='Path to saved model')
+args = parser.parse_args()
+
+def normalize_activations(act):
+    act = act.reshape(act.shape[0], -1)
+    act_norm = jnp.linalg.norm(act, axis=1)
+    return act / act_norm[:, None]
 
