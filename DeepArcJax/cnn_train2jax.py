@@ -12,10 +12,12 @@ import flax
 from flax import linen as nn
 from flax.training import train_state
 import dm_pix as pix # pip install dm-pix
+import os
 
+os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
 
 # JAX doen't ship with any data loading functionality.
-base_dir = "dog vs cat/dataset/training_set"
+base_dir = "train_set/dataset/training_set"
 batch_size = 64
 
 
@@ -23,12 +25,14 @@ training_set = tf.keras.utils.image_dataset_from_directory(
     base_dir, validation_split=0.2, batch_size=batch_size, subset="training", seed=5603
 )
 
+print("이거 확인할거야 0아니면 좋겠따.",len(training_set))
+
 validation_set = tf.keras.utils.image_dataset_from_directory(
     base_dir,validation_split=0.2,batch_size=batch_size,subset="validation",seed=5603,
 )
 
 eval_set = tf.keras.utils.image_dataset_from_directory(
-    "dog vs cat/dataset/test_set", batch_size=batch_size
+    "train_set/dataset/test_set", batch_size=batch_size
 )
 
 IMG_SIZE = 128
@@ -56,15 +60,15 @@ def data_augmentation(image):
 
     return new_image
 
-plt.figure(figsize=(10, 10))
-augmented_images = []
-for images, _ in training_set.take(1):
-  for i in range(9):
-    augmented_image = data_augmentation(np.array(images[i], dtype=jnp.float32))
-    augmented_images.append(augmented_image)
-    ax = plt.subplot(3, 3, i + 1)
-    plt.imshow(augmented_images[i].astype("uint8"))
-    plt.axis("off")
+# plt.figure(figsize=(10, 10))
+# augmented_images = []
+# for images, _ in training_set.take(1):
+#  for i in range(9):
+#    augmented_image = data_augmentation(np.array(images[i], dtype=jnp.float32))
+#    augmented_images.append(augmented_image)
+#    ax = plt.subplot(3, 3, i + 1)
+#    plt.imshow(augmented_images[i].astype("uint8"))
+#    plt.axis("off")
 
 jit_data_augmentation = jax.vmap(data_augmentation)
 
@@ -99,36 +103,57 @@ class_names = training_set.class_names
 num_classes = len(class_names)
 
 class CNN(nn.Module):
+
+
+    temp_list = []
+
     @nn.compact
     def __call__(self, x):
+        self.temp_list.clear()
         x = nn.Conv(features=128, kernel_size=(3, 3))(x)
+        self.temp_list.append(x)
         x = nn.relu(x)
+        self.temp_list.append(x)
         x = nn.max_pool(x, window_shape=(2, 2), strides=(2, 2))
+        self.temp_list.append(x)
         x = nn.Conv(features=64, kernel_size=(3, 3))(x)
+        self.temp_list.append(x)
         x = nn.relu(x)
+        self.temp_list.append(x)
         x = nn.max_pool(x, window_shape=(2, 2), strides=(2, 2))
+        self.temp_list.append(x)
         x = nn.Conv(features=32, kernel_size=(3, 3))(x)
+        self.temp_list.append(x)
         x = nn.relu(x)
+        self.temp_list.append(x)
         x = nn.max_pool(x, window_shape=(2, 2), strides=(2, 2))
+        self.temp_list.append(x)
         x = x.reshape((x.shape[0], -1))  # flatten
+        self.temp_list.append(x)
         x = nn.Dense(features=256)(x)
+        self.temp_list.append(x)
         x = nn.Dense(features=128)(x)
+        self.temp_list.append(x)
         x = nn.relu(x)
+        self.temp_list.append(x)
         x = nn.Dense(features=num_classes)(x)
         return x
+    def get_activations(self):
+        return self.temp_list
+        
 
-    model = CNN()
-    inp = jnp.ones([1, IMG_SIZE, IMG_SIZE, 3])
+model = CNN()
+inp = jnp.ones([1, IMG_SIZE, IMG_SIZE, 3])
     # Initialize the model
-    params = model.init(init_rng, inp)
+params = model.init(init_rng, inp)
     # print(params)'
-    learning_rate = 1e-5
-    optimizer = optax.adam(
-        learning_rate=learning_rate
-    )  # lr 1e-4. try 0.001 the default in tf.keras.optimizers.Adam
-    model_state = train_state.TrainState.create(
-        apply_fn=model.apply, params=params, tx=optimizer
-    )
+learning_rate = 1e-5
+optimizer = optax.adam(
+    learning_rate=learning_rate
+)  # lr 1e-4. try 0.001 the default in tf.keras.optimizers.Adam
+model_state = train_state.TrainState.create(
+    apply_fn=model.apply, params=params, tx=optimizer
+)
 def calculate_loss_acc(state, params, batch):
     data_input, labels = batch
     data_input = jit_data_augmentation(data_input)
@@ -143,6 +168,7 @@ def calculate_loss_acc(state, params, batch):
     acc = jnp.mean(jnp.argmax(logits, -1) == labels)
     return loss, acc
 
+print(training_data)
 batch = next(iter(training_data))
 calculate_loss_acc(model_state, model_state.params, batch)
 
@@ -210,6 +236,10 @@ def train_model(state, train_loader, test_loader, num_epochs=30):
 
     return state
 
+trained_model_state = train_model(
+    model_state, training_data, validation_data, num_epochs=50
+)
+
 metrics_df = pd.DataFrame(np.array(training_accuracy), columns=["accuracy"])
 metrics_df["val_accuracy"] = np.array(testing_accuracy)
 metrics_df["loss"] = np.array(training_loss)
@@ -220,7 +250,7 @@ metrics_df[["accuracy", "val_accuracy"]].plot()
 from flax.training import checkpoints
 
 checkpoints.save_checkpoint(
-    ckpt_dir="/content/my_checkpoints/",  # Folder to save checkpoint in
+    ckpt_dir="content/my_checkpoints/",  # Folder to save checkpoint in
     target=trained_model_state,  # What to save. To only save parameters, use model_state.params
     step=100,  # Training step or other metric to save best model on
     prefix="my_model",  # Checkpoint file name prefix
@@ -228,7 +258,7 @@ checkpoints.save_checkpoint(
 )
 
 loaded_model_state = checkpoints.restore_checkpoint(
-    ckpt_dir="/content/my_checkpoints/",  # Folder with the checkpoints
+    ckpt_dir="content/my_checkpoints/",  # Folder with the checkpoints
     target=model_state,  # (optional) matching object to rebuild state in
     prefix="my_model",  # Checkpoint file name prefix
 )

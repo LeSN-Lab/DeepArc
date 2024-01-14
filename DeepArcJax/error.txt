@@ -1,0 +1,248 @@
+2024-01-12 10:08:25.053879: I tensorflow/core/util/port.cc:113] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2024-01-12 10:08:25.089085: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:9261] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+2024-01-12 10:08:25.089135: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:607] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2024-01-12 10:08:25.090428: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1515] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2024-01-12 10:08:25.096459: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI AVX512_BF16 AVX_VNNI AMX_TILE AMX_INT8 AMX_BF16 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-01-12 10:08:25.834931: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+2024-01-12 10:08:27.577209: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1929] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 6642 MB memory:  -> device: 0, name: NVIDIA RTX A4000, pci bus id: 0000:47:00.0, compute capability: 8.6
+2024-01-12 10:08:27.754622: I external/local_tsl/tsl/platform/default/subprocess.cc:304] Start cannot spawn child process: No such file or directory
+  0%|          | 0/50 [00:00<?, ?it/s]2024-01-12 10:08:39.399214: E external/xla/xla/pjrt/pjrt_stream_executor_client.cc:2732] Execution of replica 0 failed: RESOURCE_EXHAUSTED: Failed to allocate request for 1.64GiB (1757417520B) on device ordinal 0
+BufferAssignment OOM Debugging.
+BufferAssignment stats:
+             parameter allocation:   37.48MiB
+              constant allocation:        20B
+        maybe_live_out allocation:   25.48MiB
+     preallocated temp allocation:    1.64GiB
+  preallocated temp fragmentation:       124B (0.00%)
+                 total allocation:    1.70GiB
+              total fragmentation:    47.4KiB (0.00%)
+Peak buffers:
+	Buffer 1:
+		Size: 512.00MiB
+		Operator: op_name="jit(train_step)/jit(main)/transpose(jvp(CNN))/select_and_scatter[select_consts=() scatter_consts=() window_dimensions=(1, 2, 2, 1) window_strides=(1, 2, 2, 1) padding=((0, 0), (0, 0), (0, 0), (0, 0))]" source_file="/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py" source_line=111
+		XLA Label: select-and-scatter
+		Shape: f32[64,128,128,128]
+		==========================
+
+	Buffer 2:
+		Size: 512.00MiB
+		Operator: op_name="jit(train_step)/jit(main)/jvp(CNN)/jit(relu)/max" source_file="/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py" source_line=110
+		XLA Label: fusion
+		Shape: f32[64,128,128,128]
+		==========================
+
+	Buffer 3:
+		Size: 512.00MiB
+		Operator: op_name="jit(train_step)/jit(main)/jvp(CNN)/Conv_0/conv_general_dilated[window_strides=(1, 1) padding=((1, 1), (1, 1)) lhs_dilation=(1, 1) rhs_dilation=(1, 1) dimension_numbers=ConvDimensionNumbers(lhs_spec=(0, 3, 1, 2), rhs_spec=(3, 2, 0, 1), out_spec=(0, 3, 1, 2)) feature_group_count=1 batch_group_count=1 precision=None preferred_element_type=None]" source_file="/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py" source_line=109
+		XLA Label: custom-call
+		Shape: f32[64,128,128,128]
+		==========================
+
+	Buffer 4:
+		Size: 128.00MiB
+		Operator: op_name="jit(train_step)/jit(main)/transpose(jvp(CNN))/Conv_1/conv_general_dilated[window_strides=(1, 1) padding=((1, 1), (1, 1)) lhs_dilation=(1, 1) rhs_dilation=(1, 1) dimension_numbers=ConvDimensionNumbers(lhs_spec=(0, 3, 1, 2), rhs_spec=(2, 3, 0, 1), out_spec=(0, 3, 1, 2)) feature_group_count=1 batch_group_count=1 precision=None preferred_element_type=None]" source_file="/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py" source_line=112
+		XLA Label: custom-call
+		Shape: f32[64,128,64,64]
+		==========================
+
+	Buffer 5:
+		Size: 12.00MiB
+		Operator: op_name="jit(train_step)/jit(main)/jvp(vmap(jit(data_augmentation)))/jit(rot90)/jit(_flip)/rev[dimensions=(2,)]" source_file="/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py" source_line=60
+		XLA Label: fusion
+		Shape: f32[64,3,128,128]
+		==========================
+
+	Buffer 6:
+		Size: 12.00MiB
+		Entry Parameter Subshape: f32[64,128,128,3]
+		==========================
+
+	Buffer 7:
+		Size: 8.00MiB
+		Entry Parameter Subshape: f32[8192,256]
+		==========================
+
+	Buffer 8:
+		Size: 8.00MiB
+		Entry Parameter Subshape: f32[8192,256]
+		==========================
+
+	Buffer 9:
+		Size: 8.00MiB
+		Entry Parameter Subshape: f32[8192,256]
+		==========================
+
+	Buffer 10:
+		Size: 8.00MiB
+		Operator: op_name="jit(train_step)/jit(main)/add" source_file="/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py" source_line=166
+		XLA Label: fusion
+		Shape: f32[8192,256]
+		==========================
+
+	Buffer 11:
+		Size: 8.00MiB
+		Operator: op_name="jit(train_step)/jit(main)/add" source_file="/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py" source_line=166
+		XLA Label: fusion
+		Shape: f32[8192,256]
+		==========================
+
+	Buffer 12:
+		Size: 8.00MiB
+		Operator: op_name="jit(train_step)/jit(main)/add" source_file="/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py" source_line=166
+		XLA Label: fusion
+		Shape: f32[8192,256]
+		==========================
+
+	Buffer 13:
+		Size: 288.0KiB
+		Entry Parameter Subshape: f32[3,3,128,64]
+		==========================
+
+	Buffer 14:
+		Size: 288.0KiB
+		Entry Parameter Subshape: f32[3,3,128,64]
+		==========================
+
+	Buffer 15:
+		Size: 288.0KiB
+		Entry Parameter Subshape: f32[3,3,128,64]
+		==========================
+
+
+  0%|          | 0/50 [00:05<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py", line 219, in <module>
+    trained_model_state = train_model(
+                          ^^^^^^^^^^^^
+  File "/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py", line 189, in train_model
+    state, loss, acc = train_step(state, train_batch)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+jaxlib.xla_extension.XlaRuntimeError: RESOURCE_EXHAUSTED: Failed to allocate request for 1.64GiB (1757417520B) on device ordinal 0
+BufferAssignment OOM Debugging.
+BufferAssignment stats:
+             parameter allocation:   37.48MiB
+              constant allocation:        20B
+        maybe_live_out allocation:   25.48MiB
+     preallocated temp allocation:    1.64GiB
+  preallocated temp fragmentation:       124B (0.00%)
+                 total allocation:    1.70GiB
+              total fragmentation:    47.4KiB (0.00%)
+Peak buffers:
+	Buffer 1:
+		Size: 512.00MiB
+		Operator: op_name="jit(train_step)/jit(main)/transpose(jvp(CNN))/select_and_scatter[select_consts=() scatter_consts=() window_dimensions=(1, 2, 2, 1) window_strides=(1, 2, 2, 1) padding=((0, 0), (0, 0), (0, 0), (0, 0))]" source_file="/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py" source_line=111
+		XLA Label: select-and-scatter
+		Shape: f32[64,128,128,128]
+		==========================
+
+	Buffer 2:
+		Size: 512.00MiB
+		Operator: op_name="jit(train_step)/jit(main)/jvp(CNN)/jit(relu)/max" source_file="/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py" source_line=110
+		XLA Label: fusion
+		Shape: f32[64,128,128,128]
+		==========================
+
+	Buffer 3:
+		Size: 512.00MiB
+		Operator: op_name="jit(train_step)/jit(main)/jvp(CNN)/Conv_0/conv_general_dilated[window_strides=(1, 1) padding=((1, 1), (1, 1)) lhs_dilation=(1, 1) rhs_dilation=(1, 1) dimension_numbers=ConvDimensionNumbers(lhs_spec=(0, 3, 1, 2), rhs_spec=(3, 2, 0, 1), out_spec=(0, 3, 1, 2)) feature_group_count=1 batch_group_count=1 precision=None preferred_element_type=None]" source_file="/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py" source_line=109
+		XLA Label: custom-call
+		Shape: f32[64,128,128,128]
+		==========================
+
+	Buffer 4:
+		Size: 128.00MiB
+		Operator: op_name="jit(train_step)/jit(main)/transpose(jvp(CNN))/Conv_1/conv_general_dilated[window_strides=(1, 1) padding=((1, 1), (1, 1)) lhs_dilation=(1, 1) rhs_dilation=(1, 1) dimension_numbers=ConvDimensionNumbers(lhs_spec=(0, 3, 1, 2), rhs_spec=(2, 3, 0, 1), out_spec=(0, 3, 1, 2)) feature_group_count=1 batch_group_count=1 precision=None preferred_element_type=None]" source_file="/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py" source_line=112
+		XLA Label: custom-call
+		Shape: f32[64,128,64,64]
+		==========================
+
+	Buffer 5:
+		Size: 12.00MiB
+		Operator: op_name="jit(train_step)/jit(main)/jvp(vmap(jit(data_augmentation)))/jit(rot90)/jit(_flip)/rev[dimensions=(2,)]" source_file="/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py" source_line=60
+		XLA Label: fusion
+		Shape: f32[64,3,128,128]
+		==========================
+
+	Buffer 6:
+		Size: 12.00MiB
+		Entry Parameter Subshape: f32[64,128,128,3]
+		==========================
+
+	Buffer 7:
+		Size: 8.00MiB
+		Entry Parameter Subshape: f32[8192,256]
+		==========================
+
+	Buffer 8:
+		Size: 8.00MiB
+		Entry Parameter Subshape: f32[8192,256]
+		==========================
+
+	Buffer 9:
+		Size: 8.00MiB
+		Entry Parameter Subshape: f32[8192,256]
+		==========================
+
+	Buffer 10:
+		Size: 8.00MiB
+		Operator: op_name="jit(train_step)/jit(main)/add" source_file="/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py" source_line=166
+		XLA Label: fusion
+		Shape: f32[8192,256]
+		==========================
+
+	Buffer 11:
+		Size: 8.00MiB
+		Operator: op_name="jit(train_step)/jit(main)/add" source_file="/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py" source_line=166
+		XLA Label: fusion
+		Shape: f32[8192,256]
+		==========================
+
+	Buffer 12:
+		Size: 8.00MiB
+		Operator: op_name="jit(train_step)/jit(main)/add" source_file="/home/deeparc/DeepArc/DeepArcJax/cnn_train2jax.py" source_line=166
+		XLA Label: fusion
+		Shape: f32[8192,256]
+		==========================
+
+	Buffer 13:
+		Size: 288.0KiB
+		Entry Parameter Subshape: f32[3,3,128,64]
+		==========================
+
+	Buffer 14:
+		Size: 288.0KiB
+		Entry Parameter Subshape: f32[3,3,128,64]
+		==========================
+
+	Buffer 15:
+		Size: 288.0KiB
+		Entry Parameter Subshape: f32[3,3,128,64]
+		==========================
+
+
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+Fri Jan 12 10:09:10 2024       
++---------------------------------------------------------------------------------------+
+| NVIDIA-SMI 545.23.08              Driver Version: 545.23.08    CUDA Version: 12.3     |
+|-----------------------------------------+----------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
+|                                         |                      |               MIG M. |
+|=========================================+======================+======================|
+|   0  NVIDIA RTX A4000               On  | 00000000:47:00.0 Off |                  Off |
+| 41%   35C    P8              13W / 140W |   7736MiB / 16376MiB |      0%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+                                                                                         
++---------------------------------------------------------------------------------------+
+| Processes:                                                                            |
+|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
+|        ID   ID                                                             Usage      |
+|=======================================================================================|
+|    0   N/A  N/A      1214      G   /usr/lib/xorg/Xorg                          214MiB |
+|    0   N/A  N/A      1752      G   /usr/lib/xorg/Xorg                          502MiB |
+|    0   N/A  N/A    160766      G   /usr/bin/gnome-shell                        247MiB |
+|    0   N/A  N/A   1573995      C   ...conda3/envs/transformers/bin/python     6748MiB |
++---------------------------------------------------------------------------------------+
