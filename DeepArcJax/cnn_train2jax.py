@@ -13,8 +13,16 @@ from flax import linen as nn
 from flax.training import train_state
 import dm_pix as pix # pip install dm-pix
 import os
+import pickle
 
-os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+  try:
+    tf.config.experimental.set_memory_growth(gpus[0], True)
+  except RuntimeError as e:
+    print(e)
+
+#os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
 
 # JAX doen't ship with any data loading functionality.
 base_dir = "train_set/dataset/training_set"
@@ -101,6 +109,7 @@ evaluation_data = get_batches(evaluation_set)
 
 class_names = training_set.class_names
 num_classes = len(class_names)
+print("num_classes:",num_classes)
 
 class CNN(nn.Module):
 
@@ -247,10 +256,16 @@ metrics_df["val_loss"] = np.array(testing_loss)
 metrics_df[["loss", "val_loss"]].plot()
 metrics_df[["accuracy", "val_accuracy"]].plot()
 
+## 모델 저장
+
+with open('model.pkl', 'wb') as f:
+    pickle.dump(model,f)
+
+
 from flax.training import checkpoints
 
 checkpoints.save_checkpoint(
-    ckpt_dir="content/my_checkpoints/",  # Folder to save checkpoint in
+    ckpt_dir="/home/deeparc/DeepArc/DeepArcJax/content/my_checkpoints/",  # Folder to save checkpoint in
     target=trained_model_state,  # What to save. To only save parameters, use model_state.params
     step=100,  # Training step or other metric to save best model on
     prefix="my_model",  # Checkpoint file name prefix
@@ -258,7 +273,9 @@ checkpoints.save_checkpoint(
 )
 
 loaded_model_state = checkpoints.restore_checkpoint(
-    ckpt_dir="content/my_checkpoints/",  # Folder with the checkpoints
+    ckpt_dir="/home/deeparc/DeepArc/DeepArcJax/content/my_checkpoints/",  # Folder with the checkpoints
     target=model_state,  # (optional) matching object to rebuild state in
     prefix="my_model",  # Checkpoint file name prefix
 )
+
+
