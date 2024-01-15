@@ -165,3 +165,4 @@ train/
 .DS_Store
 DeepArcJax/train_set/
 DeepArcJax/.idea/*
+DeepArcJax/content/*
