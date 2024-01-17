@@ -147,15 +147,18 @@ class CNN(nn.Module):
         self.temp_list.append(x)
         x = nn.Dense(features=num_classes)(x)
         return x
+
     def get_activations(self):
         return self.temp_list
-        
+
 
 model = CNN()
 inp = jnp.ones([1, IMG_SIZE, IMG_SIZE, 3])
     # Initialize the model
 params = model.init(init_rng, inp)
-    # print(params)'
+# print(params)
+
+
 learning_rate = 1e-5
 optimizer = optax.adam(
     learning_rate=learning_rate
@@ -177,77 +180,78 @@ def calculate_loss_acc(state, params, batch):
     acc = jnp.mean(jnp.argmax(logits, -1) == labels)
     return loss, acc
 
-print(training_data)
+# print(training_data)
 batch = next(iter(training_data))
 calculate_loss_acc(model_state, model_state.params, batch)
 
-@jax.jit  # Jit the function for efficiency
-def train_step(state, batch):
-    # Gradient function
-    grad_fn = jax.value_and_grad(
-        calculate_loss_acc,  # Function to calculate the loss
-        argnums=1,  # Parameters are second argument of the function
-        has_aux=True,  # Function has additional outputs, here accuracy
-    )
-    # Determine gradients for current model, parameters and batch
-    (loss, acc), grads = grad_fn(state, state.params, batch)
-    # Perform parameter update with gradients and optimizer
-    state = state.apply_gradients(grads=grads)
-    # Return state and any other value we might want
-    return state, loss, acc
-
-@jax.jit  # Jit the function for efficiency
-def eval_step(state, batch):
-    # Determine the accuracy
-    loss, acc = calculate_loss_acc(state, state.params, batch)
-    return loss, acc
-training_accuracy = []
-training_loss = []
-
-testing_loss = []
-testing_accuracy = []
-
-
-def train_model(state, train_loader, test_loader, num_epochs=30):
-    # Training loop
-    for epoch in tqdm(range(num_epochs)):
-        train_batch_loss, train_batch_accuracy = [], []
-        val_batch_loss, val_batch_accuracy = [], []
-
-        for train_batch in train_loader:
-            state, loss, acc = train_step(state, train_batch)
-            train_batch_loss.append(loss)
-            train_batch_accuracy.append(acc)
-
-        for val_batch in test_loader:
-            val_loss, val_acc = eval_step(state, val_batch)
-
-            val_batch_loss.append(val_loss)
-            val_batch_accuracy.append(val_acc)
-
-        # Loss for the current epoch
-        epoch_train_loss = np.mean(train_batch_loss)
-        epoch_val_loss = np.mean(val_batch_loss)
-
-        # Accuracy for the current epoch
-        epoch_train_acc = np.mean(train_batch_accuracy)
-        epoch_val_acc = np.mean(val_batch_accuracy)
-
-        testing_loss.append(epoch_val_loss)
-        testing_accuracy.append(epoch_val_acc)
-
-        training_loss.append(epoch_train_loss)
-        training_accuracy.append(epoch_train_acc)
-
-        print(
-            f"Epoch: {epoch + 1}, loss: {epoch_train_loss:.2f}, acc: {epoch_train_acc:.2f} val loss: {epoch_val_loss:.2f} val acc {epoch_val_acc:.2f} "
+with jax.disable_jit():
+    @jax.jit  # Jit the function for efficiency
+    def train_step(state, batch):
+        # Gradient function
+        grad_fn = jax.value_and_grad(
+            calculate_loss_acc,  # Function to calculate the loss
+            argnums=1,  # Parameters are second argument of the function
+            has_aux=True,  # Function has additional outputs, here accuracy
         )
+        # Determine gradients for current model, parameters and batch
+        (loss, acc), grads = grad_fn(state, state.params, batch)
+        # Perform parameter update with gradients and optimizer
+        state = state.apply_gradients(grads=grads)
+        # Return state and any other value we might want
+        return state, loss, acc
 
-    return state
+    @jax.jit  # Jit the function for efficiency
+    def eval_step(state, batch):
+        # Determine the accuracy
+        loss, acc = calculate_loss_acc(state, state.params, batch)
+        return loss, acc
+    training_accuracy = []
+    training_loss = []
 
-trained_model_state = train_model(
-    model_state, training_data, validation_data, num_epochs=50
-)
+    testing_loss = []
+    testing_accuracy = []
+
+
+    def train_model(state, train_loader, test_loader, num_epochs=30):
+        # Training loop
+        for epoch in tqdm(range(num_epochs)):
+            train_batch_loss, train_batch_accuracy = [], []
+            val_batch_loss, val_batch_accuracy = [], []
+
+            for train_batch in train_loader:
+                state, loss, acc = train_step(state, train_batch)
+                train_batch_loss.append(loss)
+                train_batch_accuracy.append(acc)
+
+            for val_batch in test_loader:
+                val_loss, val_acc = eval_step(state, val_batch)
+
+                val_batch_loss.append(val_loss)
+                val_batch_accuracy.append(val_acc)
+
+            # Loss for the current epoch
+            epoch_train_loss = np.mean(train_batch_loss)
+            epoch_val_loss = np.mean(val_batch_loss)
+
+            # Accuracy for the current epoch
+            epoch_train_acc = np.mean(train_batch_accuracy)
+            epoch_val_acc = np.mean(val_batch_accuracy)
+
+            testing_loss.append(epoch_val_loss)
+            testing_accuracy.append(epoch_val_acc)
+
+            training_loss.append(epoch_train_loss)
+            training_accuracy.append(epoch_train_acc)
+
+            print(
+                f"Epoch: {epoch + 1}, loss: {epoch_train_loss:.2f}, acc: {epoch_train_acc:.2f} val loss: {epoch_val_loss:.2f} val acc {epoch_val_acc:.2f} "
+            )
+
+        return state
+
+    trained_model_state = train_model(
+            model_state, training_data, validation_data, num_epochs=2
+        )
 
 metrics_df = pd.DataFrame(np.array(training_accuracy), columns=["accuracy"])
 metrics_df["val_accuracy"] = np.array(testing_accuracy)
