@@ -6,8 +6,6 @@ import tensorflow.compat.v2 as tf
 tf.enable_v2_behavior()
 
 
-
-
 class MinibatchCKA(tf.keras.metrics.Metric):
 
   def __init__(self,
@@ -95,5 +93,4 @@ class MinibatchCKA(tf.keras.metrics.Metric):
       mean_hsic /= normalization[:, None] # HISC(K,K)
       mean_hsic /= normalization[None, :] # HISC(L,L)
     return mean_hsic
-
 
