@@ -5,10 +5,6 @@ from PIL import Image
 import numpy as np
 import optax
 
-from flax.training import checkpoints
-from flax.training import train_state
-
-
 # Define the CNN model
 class CNN(nn.Module):
     temp_list = []
@@ -41,7 +37,7 @@ class CNN(nn.Module):
         self.temp_list.append(x)
         x = nn.relu(x)
         self.temp_list.append(x)
-        x = nn.Dense(features=2)(x)
+        x = nn.Dense(features=num_classes)(x)
         return x
 
     def get_activations(self):
@@ -70,64 +66,28 @@ def load_model(ckpt_path):
         print("Error loading the checkpoint:", e)
         return None
 
-ckpt_path = '/home/deeparc/DeepArc/DeepArcJax/content/my_checkpoints/my_model100/checkpoint'
+ckpt_path = '/Users/songhaein/PycharmProjects/DeepArc/DeepArcJax/model.pkl'
 # Path to your checkpoint and image
 # ckpt_path = '/Users/songhaein/PycharmProjects/DeepArc/my_checkpoints/my_model100/checkpoint'  # Change this to your checkpoint path
-image_path = '/home/deeparc/DeepArc/DeepArcJax/test1.jpg'
-image_path2 = '/home/deeparc/DeepArc/DeepArcJax/test2.jpg'
+image_path = '/Users/songhaein/PycharmProjects/DeepArc/DeepArcJax/ddd.jpg'
 # Upload and set path to your image
 
 # Initialize the model
+model = CNN()
 
 # Load the trained model parameters
-#params = load_model(ckpt_path)
+params = load_model(ckpt_path)
 
 # Preprocess the image
-preprocessed_image1 = preprocess_image(image_path)
-preprocessed_image2 = preprocess_image(image_path2)
+preprocessed_image = preprocess_image(image_path)
 
 # Predict function
 @jax.jit
 def predict(params, image):
     return model.apply({'params': params}, image)
 
-
-
-model = CNN()
-
-
-
-# inp = jnp.ones([1, IMG_SIZE, IMG_SIZE, 3])
-# rng = jax.random.PRNGKey(0)
-# rng, inp_rng, init_rng = jax.random.split(rng, 3)
-# params = model.init(init_rng, inp)
-#
-# learning_rate = 1e-5
-# optimizer = optax.adam(
-#     learning_rate=learning_rate
-# )  # lr 1e-4. try 0.001 the default in tf.keras.optimizers.Adam
-# model_state = train_state.TrainState.create(
-#     apply_fn=model.apply, params=params, tx=optimizer
-# )
-
-loaded_model_state = checkpoints.restore_checkpoint(
-    ckpt_dir="/home/deeparc/DeepArc/DeepArcJax/content/my_checkpoints/",  # Folder with the checkpoints
-    target=model_state,  # (optional) matching object to rebuild state in
-    prefix="my_model",  # Checkpoint file name prefix
-)
-
-
-print(model.get_activations())
-print("========================================")
 # Make a prediction
-predictions = model.apply(loaded_model_state.params,preprocessed_image1)
-print(model.get_activations())
-print("========================================")
-predictions = model.apply(loaded_model_state.params,preprocessed_image2)
-print(model.get_activations())
-print("========================================")
-
-
+predictions = predict(params, preprocessed_image)
 
 # Process the predictions as needed
 # For example, if it's a classification model, you might want to find the class with the highest probability

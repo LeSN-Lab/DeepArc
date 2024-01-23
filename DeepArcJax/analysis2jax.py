@@ -66,7 +66,7 @@ class CNN(nn.Module):
         self.temp_list.append(x)
         x = nn.relu(x)
         self.temp_list.append(x)
-        x = nn.Dense(features=num_classes)(x)
+        x = nn.Dense(features=2)(x)
         return x
 
     def get_activations(self):
