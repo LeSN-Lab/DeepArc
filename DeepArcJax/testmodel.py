@@ -97,18 +97,18 @@ model = CNN()
 
 
 
-# inp = jnp.ones([1, IMG_SIZE, IMG_SIZE, 3])
-# rng = jax.random.PRNGKey(0)
-# rng, inp_rng, init_rng = jax.random.split(rng, 3)
-# params = model.init(init_rng, inp)
-#
-# learning_rate = 1e-5
-# optimizer = optax.adam(
-#     learning_rate=learning_rate
-# )  # lr 1e-4. try 0.001 the default in tf.keras.optimizers.Adam
-# model_state = train_state.TrainState.create(
-#     apply_fn=model.apply, params=params, tx=optimizer
-# )
+inp = jnp.ones([1, IMG_SIZE, IMG_SIZE, 3])
+rng = jax.random.PRNGKey(0)
+rng, inp_rng, init_rng = jax.random.split(rng, 3)
+params = model.init(init_rng, inp)
+
+learning_rate = 1e-5
+optimizer = optax.adam(
+    learning_rate=learning_rate
+)  # lr 1e-4. try 0.001 the default in tf.keras.optimizers.Adam
+model_state = train_state.TrainState.create(
+    apply_fn=model.apply, params=params, tx=optimizer
+)
 
 loaded_model_state = checkpoints.restore_checkpoint(
     ckpt_dir="/home/deeparc/DeepArc/DeepArcJax/content/my_checkpoints/",  # Folder with the checkpoints
